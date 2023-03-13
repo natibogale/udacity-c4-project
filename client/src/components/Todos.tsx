@@ -45,6 +45,10 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   }
 
   onTodoCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
+    if (this.state.newTodoName === "") {
+      alert("Cannot save empty task");
+    }
+    else{
     try {
       const dueDate = this.calculateDueDate()
       const newTodo = await createTodo(this.props.auth.getIdToken(), {
@@ -58,6 +62,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     } catch {
       alert('Todo creation failed')
     }
+  }
   }
 
   onTodoDelete = async (todoId: string) => {
@@ -123,7 +128,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
               labelPosition: 'left',
               icon: 'add',
               content: 'New task',
-              onClick: this.onTodoCreate
+              onClick: this.onTodoCreate,
             }}
             fluid
             actionPosition="left"
