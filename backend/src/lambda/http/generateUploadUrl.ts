@@ -16,7 +16,7 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
   const todoId = event.pathParameters.todoId
   const userId = authHelper.getUserId(event)
 
-  const item = await todosAccess.getTodoById(todoId)
+  const item = await todosAccess.getTodoById(todoId,userId)
   if (item.Count == 0) {
     return {
       statusCode: 404,

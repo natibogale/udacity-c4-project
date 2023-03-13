@@ -17,7 +17,7 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
   const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
   const userId = authHelper.getUserId(event)
 
-  const item = await todosAccess.getTodoById(todoId)
+  const item = await todosAccess.getTodoById(todoId,userId)
 
   if (item.Count == 0) {
     return {
@@ -37,7 +37,7 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
     }
   }
 
-  await new TodosAccess().updateTodo(updatedTodo, todoId)
+  await new TodosAccess().updateTodo(updatedTodo, todoId,userId)
   return {
     statusCode: 200,
     body: JSON.stringify({

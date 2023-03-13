@@ -21,7 +21,7 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
   }
 
   const userId = authHelper.getUserId(event)
-  const item = await todosAccess.getTodoById(todoId)
+  const item = await todosAccess.getTodoById(todoId,userId)
   if (item.Count == 0) {
     return {
       statusCode: 404,
@@ -40,7 +40,7 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
     }
   }
 
-  await todosAccess.deleteTodoById(todoId)
+  await todosAccess.deleteTodoById(todoId,userId)
   return {
     statusCode: 200,
     body: JSON.stringify({

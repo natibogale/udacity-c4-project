@@ -46,21 +46,23 @@ export class TodosAccess {
     }
 
 
-    async getTodoById(id: string): Promise<AWS.DynamoDB.QueryOutput> {
+    async getTodoById(id: string,userId: string): Promise<AWS.DynamoDB.QueryOutput> {
         return await this.docClient.query({
             TableName: this.todosTable,
-            KeyConditionExpression: 'todoId = :todoId',
+            KeyConditionExpression: 'todoId = :todoId AND userId = :userId',
             ExpressionAttributeValues: {
-                ':todoId': id
+                ':todoId': id,
+                ':userId': userId
             }
         }).promise()
     }
 
-    async updateTodo(updatedTodo: UpdateTodoRequest, todoId: string) {
+    async updateTodo(updatedTodo: UpdateTodoRequest, todoId: string,userId: string) {
         await this.docClient.update({
             TableName: this.todosTable,
             Key: {
-                'todoId': todoId
+                'todoId': todoId,
+                'userId' : userId
             },
             UpdateExpression: 'set #namefield = :n, dueDate = :d, done = :done',
             ExpressionAttributeValues: {
@@ -74,11 +76,12 @@ export class TodosAccess {
         }).promise()
     }
 
-    async deleteTodoById(todoId: string) {
+    async deleteTodoById(todoId: string, userId: string) {
         const param = {
             TableName: this.todosTable,
             Key: {
-                "todoId": todoId
+                "todoId": todoId,
+                "userId": userId
             }
         }
 
