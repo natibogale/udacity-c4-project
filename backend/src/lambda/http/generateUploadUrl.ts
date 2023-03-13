@@ -2,25 +2,50 @@ import 'source-map-support/register'
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as middy from 'middy'
-import { cors, httpErrorHandler } from 'middy/middlewares'
+import { cors } from 'middy/middlewares'
 
-import { createAttachmentPresignedUrl } from '../../businessLogic/todos'
-import { getUserId } from '../utils'
+import { TodosAccess } from '../../helpers/todosAcess'
+import { AuthHelper } from '../../helpers/AuthHelper'
+import { S3Bucket } from '../../helpers/attachmentUtils'
 
-export const handler = middy(
-  async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const todoId = event.pathParameters.todoId
-    // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
-    
+const todosAccess = new TodosAccess()
+const authHelper = new AuthHelper()
+const s3Bucket = new S3Bucket()
 
-    return undefined
+export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const todoId = event.pathParameters.todoId
+  const userId = authHelper.getUserId(event)
+
+  const item = await todosAccess.getTodoById(todoId)
+  if (item.Count == 0) {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({
+        error: 'No TODO with the provided id is found!'
+      })
+    }
   }
-)
 
-handler
-  .use(httpErrorHandler())
-  .use(
-    cors({
-      credentials: true
+  if (item.Items[0].userId !== userId) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({
+        error: 'You can not perform this action, this TODO does not belong to your account!'
+      })
+    }
+  }
+
+  const uploadUrl = s3Bucket.getPresignedUrl(todoId)
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      uploadUrl: uploadUrl
     })
-  )
+  }
+})
+
+handler.use(
+  cors({
+    credentials: true
+  })
+)
